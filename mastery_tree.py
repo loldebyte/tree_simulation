@@ -143,15 +143,18 @@ def get_random_by_tier(tree: MasteryTree, tier: int) -> MasteryPoint:
 
 def get_smallest_free_tier(tree: MasteryTree, pool: MasteryTree) -> int:
     for tier in range(1, 6):
-        if set(tree.points[tier]).issubset(pool.points[tier]):
+        if not set(pool.points[tier]).issubset(tree.points[tier]):
             return tier
     return None
+
+# %%
 
 def create_hybrid_tree(first_tree: MasteryTree, second_tree: MasteryTree) -> MasteryTree:
     pool = first_tree.fuse(second_tree)
     nt = MasteryTree(f"{first_tree.species} & {second_tree.species} hybrid")
     while not nt.is_finished():
-        if get_smallest_free_tier(nt, pool) > VALEUR_TOTALE - nt.get_current_value():
+        smallest_tier_available = get_smallest_free_tier(nt, pool)
+        if smallest_tier_available is None or smallest_tier_available > VALEUR_TOTALE - nt.get_current_value():
             return nt
         for tier in range(1, 6):
             if (pool.get_number_of_points_by_tier(tier) > 0) & (tier <= nt.get_available_space()):
