@@ -27,17 +27,17 @@ def get_args():
 
 
 def get_tree_by_argname(name: str) -> mastery_tree.MasteryTree:
-    d = {"AVG": mastery_tree.generate_avg_distribution(),
-         "MINLT": mastery_tree.generate_min_low_tiers(),
-         "MAXLT": mastery_tree.generate_max_low_tiers()}
+    d = {"AVG": mastery_tree.generate_avg_distribution,
+         "MINLT": mastery_tree.generate_min_low_tiers,
+         "MAXLT": mastery_tree.generate_max_low_tiers}
     return d[name]
 
 
 def main():
     trees, p, med, minmax, tiers = get_args()
-    first_tree = get_tree_by_argname(trees[0])
-    second_tree = get_tree_by_argname(trees[1])
-    hybrids = [mastery_tree.create_hybrid_tree(first_tree, second_tree) for _ in range(p)]
+    first_tree_gen = get_tree_by_argname(trees[0])
+    second_tree_gen = get_tree_by_argname(trees[1])
+    hybrids = [mastery_tree.create_hybrid_tree(first_tree_gen(), second_tree_gen()) for _ in range(p)]
     viable = [1 if tree.is_viable() else 0 for tree in hybrids]
     fini = [1 if tree.is_finished() else 0 for tree in hybrids]
     print(f"% viable hybrids : {statistics.mean(viable)*100}%\n"
