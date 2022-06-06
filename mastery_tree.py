@@ -255,15 +255,12 @@ class MasteryTree:
         """
         return self.is_viable() & self.is_complete()
 
-# TODO: get tier from point's attributes
-    def add_point(self, tier: int, point: MasteryPoint):
+    def add_point(self, point: MasteryPoint):
         """
         Add a point to the tree.
 
         Parameters
         ----------
-        tier : int
-            The point's tier.
         point : MasteryPoint
             The point to add.
 
@@ -277,12 +274,12 @@ class MasteryTree:
         -------
         None.
         """
-        if self.get_current_value() + tier <= VALEUR_TOTALE:
-            self.points[tier].append(point)
+        if self.get_current_value() + point.tier <= VALEUR_TOTALE:
+            self.points[point.tier].append(point)
         else:
             raise ValueError(
-                f"Unable to add point of value {tier} : current capacity is "
-                f"at {self.get_current_value()}")
+                f"Unable to add point of value {point.tier} : current "
+                f"capacity is at {self.get_current_value()}")
 
     def get_number_of_points_by_tier(self, tier: int) -> int:
         """
@@ -542,5 +539,5 @@ def create_hybrid_tree(first_tree: MasteryTree,
                     & (tier <= nt.get_available_space())):
                 point = get_random_by_tier(pool, tier)
                 if not nt.contains(point):
-                    nt.add_point(tier, point)
+                    nt.add_point(point)
     return nt
