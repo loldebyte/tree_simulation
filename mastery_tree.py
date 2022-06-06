@@ -366,6 +366,22 @@ class MasteryTree:
         else:
             return False
 
+    def get_random_by_tier(self, tier: int) -> MasteryPoint:
+        """
+        Return a random point of specified tier from the tree.
+
+        Parameters
+        ----------
+        tier : int
+            The tier from which to pick.
+
+        Returns
+        -------
+        MasteryPoint
+            The chosen point.
+        """
+        return random.choice(self.points[tier])
+
 
 def create_random_mp(tier: int, prefix: str = "") -> MasteryPoint:
     """
@@ -464,26 +480,6 @@ def generate_avg_distribution() -> MasteryTree:
                         for key in range(1, 6)})
 
 
-# TODO: make this a method of MasteryTree
-def get_random_by_tier(tree: MasteryTree, tier: int) -> MasteryPoint:
-    """
-    Return a random point of specified tier from a tree passed as argument.
-
-    Parameters
-    ----------
-    tree : MasteryTree
-        The tree from which to pick.
-    tier : int
-        The tier from which to pick.
-
-    Returns
-    -------
-    MasteryPoint
-        The chosen point.
-    """
-    return random.choice(tree.points[tier])
-
-
 def get_smallest_free_tier(tree: MasteryTree,
                            pool: MasteryTree) -> Optional[int]:
     """
@@ -537,7 +533,7 @@ def create_hybrid_tree(first_tree: MasteryTree,
         for tier in range(1, 6):
             if ((pool.get_number_of_points_by_tier(tier) > 0)
                     & (tier <= nt.get_available_space())):
-                point = get_random_by_tier(pool, tier)
+                point = pool.get_random_by_tier(tier)
                 if not nt.contains(point):
                     nt.add_point(point)
     return nt
