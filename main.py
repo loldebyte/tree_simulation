@@ -30,9 +30,13 @@ def get_args():
                         help="Specify to calculate percentage of tiers"
                         "exhausted (all points taken in tier), by tier.")
     parser.add_argument("--tree1", type=pathlib.Path,
-                        help="The path to the file describing Tree #1")
+                        help="The path to the file describing Tree #1\n"
+                        "The format is : # of points of tier matching line "
+                        "number, ie: on line 1, # of T1 points, on line 2, # "
+                        "of T2 points etc..")
     parser.add_argument("--tree2", type=pathlib.Path,
-                        help="The path to the file describing Tree #2")
+                        help="The path to the file describing Tree #2. For "
+                        "the file's format see --tree1")
     args = parser.parse_args()
     return (args.trees, args.precision, args.median, args.minmax, args.tiers,
             args.tree1, args.tree2)
