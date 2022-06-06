@@ -1,8 +1,9 @@
 """Mastery Point and Mastery Tree definitions & utils."""
 from __future__ import annotations
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Callable
 import string
 import random
+import os
 
 VALEUR_TOTALE = 47
 
@@ -480,6 +481,28 @@ def generate_avg_distribution() -> MasteryTree:
                         for key in range(1, 6)})
 
 
+def generate_from_dict(dic: Dict[int, int], name: str) -> MasteryTree:
+    """
+    Return a new tree from a {tier: number_of_points} dictionnary.
+
+    Parameters
+    ----------
+    dic : Dict[int, int]
+        A dictionnary mapping tiers to the number of points in that tier.
+    name : str
+        The name of the new tree.
+
+    Returns
+    -------
+    MasteryTree
+        The newly created tree.
+
+    """
+    return MasteryTree(name,
+                       {tier: create_list_of_random_mp(tier, value)
+                        for tier, value in dic.items()})
+
+
 def get_smallest_free_tier(tree: MasteryTree,
                            pool: MasteryTree) -> Optional[int]:
     """
@@ -502,8 +525,6 @@ def get_smallest_free_tier(tree: MasteryTree,
         if not set(pool.points[tier]).issubset(tree.points[tier]):
             return tier
     return None
-
-# %%
 
 
 def create_hybrid_tree(first_tree: MasteryTree,
@@ -537,3 +558,45 @@ def create_hybrid_tree(first_tree: MasteryTree,
                 if not nt.contains(point):
                     nt.add_point(point)
     return nt
+
+
+def tree_from_file(path: str) -> MasteryTree:
+    """
+    Return a new tree whose points by tier repartition is specified by a file.
+
+    Parameters
+    ----------
+    path : str
+        The path to the file specifying points by tier repartition.
+
+    Returns
+    -------
+    MasteryTree
+        The newly created Mastery Tree.
+    """
+    d = {}
+    with open(path, "r") as f:
+        for tier in range(1, 6):
+            d[tier] = int(f.readline().strip())
+    return generate_from_dict(d, "tree_" + os.path.basename(path))
+
+
+def generate_from_file(path: str) -> Callable:
+    """
+    Return a function that wraps around tree_from_file and takes no arguments.
+
+    Parameters
+    ----------
+    path : str
+        The path to pass to tree_from_file inside our wrapper function.
+
+    Returns
+    -------
+    Callable
+        A function that takes no arguments and behaves like tree_from_file does
+        when passed _path_.
+
+    """
+    def tree_from_specific_file():
+        return tree_from_file(path)
+    return tree_from_specific_file
