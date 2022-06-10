@@ -37,25 +37,28 @@ def get_args():
     parser.add_argument("--tree2", type=pathlib.Path,
                         help="The path to the file describing Tree #2. For "
                         "the file's format see --tree1")
+    parser.add_argument("-V", "--tree-value", type=int, default=47,
+                        help="The tree value the default tree will have.")
     args = parser.parse_args()
     return (args.trees, args.precision, args.median, args.minmax, args.tiers,
-            args.tree1, args.tree2)
+            args.tree1, args.tree2, args.tree_value)
 
 
-def get_tree_by_argname(name: str) -> mastery_tree.MasteryTree:
+def get_tree_by_argname(name: str,
+                        tree_value: int) -> mastery_tree.MasteryTree:
     """Return the function that instantiates the correct Mastery Tree."""
-    d = {"AVG": mastery_tree.generate_avg_distribution,
-         "MINLT": mastery_tree.generate_min_low_tiers,
-         "MAXLT": mastery_tree.generate_max_low_tiers}
+    d = {"AVG": mastery_tree.generate_avg(tree_value),
+         "MINLT": mastery_tree.generate_min_low_tiers(tree_value),
+         "MAXLT": mastery_tree.generate_max_low_tiers(tree_value)}
     return d[name]
 
 
 def main():
-    """Simulates hybridation according to command line arguments."""
-    trees, p, med, minmax, tiers, t1, t2 = get_args()
+    """Simulate hybridation according to command line arguments."""
+    trees, p, med, minmax, tiers, t1, t2, tree_value = get_args()
     if t1 is None and t2 is None:
-        first_tree_gen = get_tree_by_argname(trees[0])
-        second_tree_gen = get_tree_by_argname(trees[1])
+        first_tree_gen = get_tree_by_argname(trees[0], tree_value)
+        second_tree_gen = get_tree_by_argname(trees[1], tree_value)
     elif t1 is not None and t2 is not None:
         first_tree_gen = mastery_tree.generate_from_file(t1)
         second_tree_gen = mastery_tree.generate_from_file(t2)
