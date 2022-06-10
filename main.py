@@ -79,19 +79,20 @@ def main():
                   f"quartiles : {statistics.quantiles(tier_lengths[tier])}")
     if minmax:
         max_pts = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
-        min_pts = {1: 10, 2: 10, 3: 10, 4: 10, 5: 10}
+        min_pts = {1: 999, 2: 999, 3: 999, 4: 999, 5: 999}
         for tree in hybrids:
             for tier in range(1, 6):
-                if max_pts[tier] < tree.get_number_of_points_by_tier(tier):
-                    max_pts[tier] = tree.get_number_of_points_by_tier(tier)
-                if min_pts[tier] > tree.get_number_of_points_by_tier(tier):
-                    min_pts[tier] = tree.get_number_of_points_by_tier(tier)
+                nb = tree.get_number_of_points_by_tier(tier)
+                if max_pts[tier] < nb:
+                    max_pts[tier] = nb
+                if min_pts[tier] > nb:
+                    min_pts[tier] = nb
         print("maximum # of points by tiers :\n")
         for tier in range(1, 6):
-            print(f"T{tier}: {max_pts[1]}\n")
+            print(f"T{tier}: {max_pts[tier]}\n")
         print("minimum # of points by tiers :\n")
         for tier in range(1, 6):
-            print(f"T{tier}: {min_pts[1]}\n")
+            print(f"T{tier}: {min_pts[tier]}\n")
     if tiers:
         print("The tiers option is not currently supported.")
 
