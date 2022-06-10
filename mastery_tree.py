@@ -5,8 +5,6 @@ import string
 import random
 import os
 
-VALEUR_TOTALE = 47
-
 
 class MasteryPoint:
     """
@@ -120,8 +118,10 @@ class MasteryTree:
 
     def __init__(self, species: str,
                  mastery_points: Optional[Dict[int,
-                                               List[MasteryPoint]]] = None):
+                                               List[MasteryPoint]]] = None,
+                 maximum_tree_value: int = 47):
         self.species = species
+        self.maximum_tree_value = maximum_tree_value
         if mastery_points is None:
             self.points = {1: [], 2: [], 3: [], 4: [], 5: []}
         else:
@@ -229,7 +229,7 @@ class MasteryTree:
         int
             The current tree value available for new points.
         """
-        return VALEUR_TOTALE - self.get_current_value()
+        return self.maximum_tree_value - self.get_current_value()
 
     def is_complete(self) -> bool:
         """
@@ -240,7 +240,7 @@ class MasteryTree:
         bool
             Whether the current tree value matches VALEUR_TOTALE or not.
         """
-        return self.get_current_value() == VALEUR_TOTALE
+        return self.get_current_value() == self.maximum_tree_value
 
     def is_finished(self) -> bool:
         """
@@ -275,7 +275,7 @@ class MasteryTree:
         -------
         None.
         """
-        if self.get_current_value() + point.tier <= VALEUR_TOTALE:
+        if self.get_current_value() + point.tier <= self.maximum_tree_value:
             self.points[point.tier].append(point)
         else:
             raise ValueError(
@@ -343,10 +343,15 @@ class MasteryTree:
             A new tree with all points from both trees.
 
         """
-        return MasteryTree(f"fused {self.species} & {mastery_tree.species}",
-                           {key: self.points[key].copy()
-                            + mastery_tree.points[key].copy()
-                            for key in range(1, 6)})
+        if self.maximum_tree_value == mastery_tree.maximum_tree_value:
+            return MasteryTree(f"fuse {self.species} & {mastery_tree.species}",
+                               {key: self.points[key].copy()
+                                + mastery_tree.points[key].copy()
+                                for key in range(1, 6)},
+                               self.maximum_tree_value)
+        else:
+            raise ValueError(f"Trees {self.species} and {mastery_tree.species}"
+                             " have different maximum tree values !")
 
     def contains(self, point: MasteryPoint) -> bool:
         """
@@ -429,56 +434,185 @@ def create_list_of_random_mp(tier: int, n: int, prefix: str = ""):
             for nb in range(n)]
 
 
-def generate_min_low_tiers() -> MasteryTree:
+def evenly_fill_tree(mt: MasteryTree) -> MasteryTree:
     """
-    Create a new mastery tree with minimal amount of low tier points.
+    Fill a tree with points until its tree_value matches _tree_value_.
+
+    Adds 1 point of every tier successively, starting from the heavier tier.
+
+    Parameters
+    ----------
+    mt : MasteryTree
+        The tree to fill with new points.
 
     Returns
     -------
     MasteryTree
-        The newly create mastery tree.
+        The filled tree.
 
     """
-    return MasteryTree("Min low tiers",
-                       {1: create_list_of_random_mp(1, 1, "MINLT"),
-                        2: create_list_of_random_mp(2, 3, "MINLT"),
-                        3: create_list_of_random_mp(3, 3, "MINLT"),
-                        4: create_list_of_random_mp(4, 4, "MINLT"),
-                        5: create_list_of_random_mp(5, 3, "MINLT")})
+    while mt.get_current_value() < mt.maximum_tree_value:
+        for tier in range(5, 0, -1):
+            if mt.get_available_space() >= tier:
+                mt.add_point(create_random_mp(tier, f"t{tier}"))
+    return mt
 
 
-def generate_max_low_tiers() -> MasteryTree:
+def heavy_fill_tree(mt: MasteryTree) -> MasteryTree:
     """
-    Create a new mastery tree with maximal amount of low tier points.
+    Fill a tree with points until its tree_value matches _tree_value_.
+
+    Adds as many points of the heaviest tiers as possible.
+
+    Parameters
+    ----------
+    mt : MasteryTree
+        The tree to fill with new points.
 
     Returns
     -------
     MasteryTree
-        The newly create mastery tree..
+        The filled tree.
 
     """
-    return MasteryTree("Min low tiers",
-                       {1: create_list_of_random_mp(1, 6, "MINLT"),
-                        2: create_list_of_random_mp(2, 6, "MINLT"),
-                        3: create_list_of_random_mp(3, 4, "MINLT"),
-                        4: create_list_of_random_mp(4, 3, "MINLT"),
-                        5: create_list_of_random_mp(5, 1, "MINLT")})
+    for tier in range(5, 0, -1):
+        while mt.maximum_tree_value - mt.get_current_value() > tier:
+            mt.add_point(create_random_mp(tier, f"t{tier}"))
+    return mt
 
 
-def generate_avg_distribution() -> MasteryTree:
+def light_fill_tree(mt: MasteryTree) -> MasteryTree:
     """
-    Create a new mastery tree with average amount of low tier points.
+    Fill a tree with points until its tree_value matches _tree_value_.
+
+    Adds as many points of tier 1 as possible.
+
+    Parameters
+    ----------
+    mt : MasteryTree
+        The tree to fill with new points.
 
     Returns
     -------
     MasteryTree
-        The newly create mastery tree.
+        The filled tree.
 
     """
-    return MasteryTree("avg_distrib",
-                       {key: (create_list_of_random_mp(key, 3, "AVG") if key != 2
-                              else create_list_of_random_mp(key, 4, "AVG"))
-                        for key in range(1, 6)})
+    while mt.get_current_value() < mt.maximum_tree_value:
+        mt.add_point(create_random_mp(1, "t1"))
+    return mt
+
+
+def generate_heavy_viable(name, tree_value=47) -> MasteryTree:
+    """
+    Return a new incomplete tree that is viable and has many high tier points.
+
+    Parameters
+    ----------
+    name : str
+        the name of the tree.
+
+    tree_value: int
+        the maximum tree value of the tree
+
+    Returns
+    -------
+    MasteryTree
+        The newly created tree.
+    """
+    return MasteryTree(name, {1: create_list_of_random_mp(1, 1, name),
+                              2: create_list_of_random_mp(2, 2, name),
+                              3: create_list_of_random_mp(3, 3, name),
+                              4: create_list_of_random_mp(4, 4, name),
+                              5: create_list_of_random_mp(5, 1, name)})
+
+
+def generate_light_viable(name, tree_value=47) -> MasteryTree:
+    """
+    Return a new incomplete tree that is viable and has few high tier points.
+
+    Parameters
+    ----------
+    name : TYPE
+        the name of the tree.
+
+    tree_value: int
+        the maximum tree value of the tree
+
+    Returns
+    -------
+    MasteryTree
+        The newly created tree.
+    """
+    return MasteryTree(name, {1: create_list_of_random_mp(1, 4, name),
+                              2: create_list_of_random_mp(2, 3, name),
+                              3: create_list_of_random_mp(3, 2, name),
+                              4: create_list_of_random_mp(4, 1, name),
+                              5: create_list_of_random_mp(5, 1, name)})
+
+
+def generate_min_low_tiers(tree_value: int) -> Callable:
+    """
+    Return a function that returns a new Mastery tree with few low tier points.
+
+    The new tree's tree_value is _tree_value_.
+
+    Parameters
+    ----------
+    tree_value : int
+        The tree value the generated tree must reach.
+
+    Returns
+    -------
+    Callable
+        A function that instantiates random such trees.
+    """
+
+    def mlt_from_tree_value():
+        return heavy_fill_tree(generate_heavy_viable("MINLT", tree_value))
+    return mlt_from_tree_value
+
+
+def generate_max_low_tiers(tree_value: int) -> Callable:
+    """
+    Return a function that creates a mastery tree with many low tier points.
+
+    The new tree's tree_value is _tree_value_.
+
+    Parameters
+    ----------
+    tree_value : int
+        The tree value the generated tree must reach.
+
+    Returns
+    -------
+    Callable
+        A function that instantiates random such trees.
+    """
+    def maxlt_from_tree_value():
+        return light_fill_tree(generate_light_viable("MAXLT", tree_value))
+    return maxlt_from_tree_value
+
+
+def generate_avg(tree_value: int) -> Callable:
+    """
+    Return a function that creates a mastery tree with avg low tier points.
+
+    The new tree's tree_value is _tree_value_.
+
+    Parameters
+    ----------
+    tree_value : int
+        The tree value the generated tree must reach.
+
+    Returns
+    -------
+    Callable
+        A function that instantiates random such trees.
+    """
+    def avglt_from_tree_value():
+        return evenly_fill_tree(generate_light_viable("AVG", tree_value))
+    return avglt_from_tree_value
 
 
 def generate_from_dict(dic: Dict[int, int], name: str) -> MasteryTree:
@@ -500,7 +634,8 @@ def generate_from_dict(dic: Dict[int, int], name: str) -> MasteryTree:
     """
     return MasteryTree(name,
                        {tier: create_list_of_random_mp(tier, value)
-                        for tier, value in dic.items()})
+                        for tier, value in dic.items()},
+                       sum([tier*n_pts for tier, n_pts in dic.items()]))
 
 
 def get_smallest_free_tier(tree: MasteryTree,
@@ -549,7 +684,7 @@ def create_hybrid_tree(first_tree: MasteryTree,
     nt = MasteryTree(f"{first_tree.species} & {second_tree.species} hybrid")
     while not nt.is_finished():
         smallest_tier_available = get_smallest_free_tier(nt, pool)
-        if smallest_tier_available is None or smallest_tier_available > VALEUR_TOTALE - nt.get_current_value():
+        if smallest_tier_available is None or smallest_tier_available > nt.maximum_tree_value - nt.get_current_value():
             return nt
         for tier in range(1, 6):
             if ((pool.get_number_of_points_by_tier(tier) > 0)
