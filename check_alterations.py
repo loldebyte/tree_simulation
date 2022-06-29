@@ -24,10 +24,12 @@ df[cols_to_ffill] = df[cols_to_ffill].fillna(method="ffill")
 
 
 def check_all_combinations() -> bool:
+    """Return True if all combinations of reagents exist in the dataframe."""
     return False
 
 
 def check_coherent_results() -> bool:
+    """Return True if all different recipes yield the same Alteration."""
     return False
 
 
