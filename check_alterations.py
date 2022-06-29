@@ -9,8 +9,7 @@ import pandas as pd
 
 
 f = "/media/hdd/Downloads/Modifications d'État - Arbre des Altérations.csv"
-df = pd.read_csv(f)
-backup = df.copy()
+df = pd.read_csv(f, dtype="string")
 
 for i in range(3):
     df.iloc[0, i*4:4*i+4] = df.iloc[0, i*4:4*i+4].apply(lambda x: f"{df.columns[i*4]} {x}")
