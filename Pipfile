@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 spyder-kernels = "==2.3.*"
 pandas = "*"
+openpyxl = "*"
 
 [dev-packages]
 
