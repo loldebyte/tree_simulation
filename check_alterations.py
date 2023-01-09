@@ -56,7 +56,6 @@ def check_2_reagents_combinations(df: pd.DataFrame) -> bool:
     cols = df.columns.to_list()
 
     def to_apply(series):
-        # TODO: create a series with reagents rearranged
         reordered_series = pd.Series({cols[0]: series[cols[1]],
                                       cols[1]: series[cols[0]],
                                       cols[2]: series[cols[2]]})
@@ -98,10 +97,15 @@ def check_3_reagents_combinations() -> bool:
         True if all 2 alterations combinations are good, else False.
 
     """
+    return False
 
 
 def check_coherent_results() -> bool:
     """Return True if all different recipes yield the same Alteration."""
+    # si les check d'avant passent, alors toutes recettes sont cohérentes
+    # ssi il n'y a aucun doublons sur les recettes, càd aucun cas ou on a
+    # 1 recette pour 2 produits
+    # TODO: s'assurer qu'il n'y a aucun doublon sur les recettes
     return False
 
 
