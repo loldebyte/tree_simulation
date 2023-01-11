@@ -38,12 +38,11 @@ t3 = df.iloc[:, 8:12].dropna(subset="Tier 3 Produit")
 def check_all_combinations() -> bool:
     """Return True if all combinations of reagents exist in the dataframe."""
     # call following function with appropriate parameters
-    two_reg = (check_2_reagents_combinations(t1_bi)
-               and check_2_reagents_combinations(t2_bi))
-    three_reg = (check_3_reagents_combinations(t1_tri)
-                 and check_3_reagents_combinations(t2_tri)
-                 and check_3_reagents_combinations(t3))
-    return two_reg and three_reg
+    return (check_2_reagents_combinations(t1_bi)
+            & check_2_reagents_combinations(t2_bi)
+            & check_3_reagents_combinations(t1_tri)
+            & check_3_reagents_combinations(t2_tri)
+            & check_3_reagents_combinations(t3))
 
 
 def check_2_reagents_combinations(df_: pd.DataFrame) -> bool:
