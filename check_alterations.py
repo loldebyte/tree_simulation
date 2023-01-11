@@ -10,7 +10,7 @@ import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
-f = "/media/hdd/Downloads/Modifications d'État - Arbre des Altérations.csv"
+f = "./Modifications d'État - Arbre des Altérations.csv"
 df = pd.read_csv(f, dtype="string")
 
 for i in range(3):
